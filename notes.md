@@ -141,3 +141,25 @@ git push origin feature/token-monitoring  # Upload to GitHub
 When feature is complete and tested:
 git checkout main      # Go back to main branch
 git merge feature/token-monitoring  # Add your new feature to main
+
+git branch - tells you which branch you are on
+git checkout feature/test - switches to that branch
+
+# Show git's internal storage
+ls .git/objects
+
+# Switch back to feature branch to see file
+git checkout feature/test
+ls
+
+# Switch to main to see file disappear
+git checkout main
+ls
+
+rm test.txt - deletes the file
+
+# Push all branches
+git push origin --all
+
+# Push specific branch
+git push origin feature/test
