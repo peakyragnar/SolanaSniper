@@ -87,6 +87,7 @@ pubkey: HJacMpaNVd2B3vDCup9P836mMWfthgnY253f3EsFJoLZ
 seed phrase: side junior provide early vague plug wrestle luggage shove usual design claim
 
 check balance: solana balance HJacMpaNVd2B3vDCup9P836mMWfthgnY253f3EsFJoLZ --url devnet
+https://faucet.solana.com/
 
 So far: 
 Project Structure
@@ -127,3 +128,16 @@ Main Application (src/index.js):
     Loads your wallet
     Connects to Solana devnet
     Checks wallet balance
+
+Git branch function:
+
+# You're working on adding token monitoring
+git checkout -b feature/token-monitoring   # Create new branch
+# Make changes to files...
+git add .                                 # Stage changes
+git commit -m "Add price checker"         # Save changes
+git push origin feature/token-monitoring  # Upload to GitHub
+
+When feature is complete and tested:
+git checkout main      # Go back to main branch
+git merge feature/token-monitoring  # Add your new feature to main
