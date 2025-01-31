@@ -1,0 +1,40 @@
+# Project: Solana Sniper Bot
+A memecoin trading bot for Solana blockchain using Jupiter API for swaps.
+
+# Code Style
+- Use ES6+ features
+- Clear, descriptive variable names
+- Comprehensive error handling
+- Async/await for promises
+- Comments for complex logic
+- ESLint standard config
+
+# Architecture
+- Modular design with separate services
+- Environment variables for config
+- Centralized logging
+- Service-based architecture
+
+# Key Files
+/src
+ /config - Network configs
+ /services - Core bot services
+ /utils - Helper functions
+ /index.js - Entry point
+
+# Dependencies  
+- @solana/web3.js: Core Solana functionality
+- @solana/spl-token: Token operations
+- dotenv: Environment management
+
+# Testing
+- Unit tests for core logic
+- Integration tests for services
+- Test on devnet first
+- Monitor for edge cases
+
+# Security 
+- Never commit private keys
+- Validate all inputs
+- Rate limiting
+- Error recovery

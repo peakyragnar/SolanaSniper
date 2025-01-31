@@ -9,6 +9,7 @@ require('dotenv').config();
 const { getConnection } = require('./config/network');
 const walletService = require('./services/wallet');
 const logger = require('./utils/logger');
+const tokenMonitor = require('./services/token-monitor');
 
 // Main initialization function
 async function initialize() {
@@ -27,6 +28,11 @@ async function initialize() {
         // Note: Balance is returned in lamports (1 SOL = 1,000,000,000 lamports)
         const balance = await connection.getBalance(wallet.publicKey);
         logger.info(`Wallet balance: ${balance / 1000000000} SOL`);
+
+        // Test token monitoring
+        const USDC_DEVNET = 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr';
+        const tokenInfo = await tokenMonitor.monitorToken(USDC_DEVNET);
+        logger.info(`Token info: ${JSON.stringify(tokenInfo)}`);
 
     } catch (error) {
         // If anything goes wrong during initialization:
