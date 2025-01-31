@@ -8,8 +8,8 @@ require('dotenv').config();
 // Import required services and utilities
 const { getConnection } = require('./config/network');
 const walletService = require('./services/wallet');
-const logger = require('./utils/logger');
 const tokenMonitor = require('./services/token-monitor');
+const logger = require('./utils/logger');
 
 // Main initialization function
 async function initialize() {
@@ -29,10 +29,11 @@ async function initialize() {
         const balance = await connection.getBalance(wallet.publicKey);
         logger.info(`Wallet balance: ${balance / 1000000000} SOL`);
 
-        // Test token monitoring
-        const USDC_DEVNET = 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr';
-        const tokenInfo = await tokenMonitor.monitorToken(USDC_DEVNET);
-        logger.info(`Token info: ${JSON.stringify(tokenInfo)}`);
+        // Example token address (USDC on devnet)
+        const testTokenAddress = 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr';
+        logger.info('Starting token monitor...');
+        await tokenMonitor.monitorToken(testTokenAddress);
+        logger.info('Token monitor started');
 
     } catch (error) {
         // If anything goes wrong during initialization:

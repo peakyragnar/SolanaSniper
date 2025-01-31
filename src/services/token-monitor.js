@@ -1,28 +1,76 @@
-const { Indexer } = require('@jup-ag/common');
-const { getConnection } = require('../config/network');
+const { PublicKey } = require('@solana/web3.js');
+const { TOKEN_PROGRAM_ID } = require('@solana/spl-token');
 const logger = require('../utils/logger');
+const { getConnection } = require('../config/network');
 
-class TokenMonitorService {
+class TokenMonitor {
     constructor() {
         this.connection = getConnection();
-        this.indexer = new Indexer({ cluster: 'devnet' });
+        this.watchedTokens = new Map(); // Store tokens we're monitoring
     }
 
-    async monitorToken(tokenMint) {
+    // Monitor a specific token
+    async monitorToken(tokenAddress) {
         try {
-            const tokens = await this.indexer.getTokens();
-            const token = tokens.find(t => t.address === tokenMint);
-            if (!token) {
-                logger.error('Token not found');
-                return null;
+            const tokenPublicKey = new PublicKey(tokenAddress);
+            
+            // Get initial token data
+            const tokenInfo = await this.connection.getParsedAccountInfo(tokenPublicKey);
+            if (!tokenInfo.value) {
+                throw new Error('Token not found');
             }
-            logger.info(`Found token: ${token.symbol}`);
-            return token;
+
+            logger.info(`Started monitoring token: ${tokenAddress}`);
+            
+            // Store initial data
+            this.watchedTokens.set(tokenAddress, {
+                address: tokenAddress,
+                lastUpdate: Date.now(),
+                supply: tokenInfo.value.data.parsed.info.supply
+            });
+
+            // Set up subscription for account changes
+            const subscriptionId = this.connection.onAccountChange(
+                tokenPublicKey,
+                (accountInfo) => this.handleTokenUpdate(tokenAddress, accountInfo),
+                'confirmed'
+            );
+
+            return subscriptionId;
+
         } catch (error) {
-            logger.error(`Token monitoring failed: ${error.message}`);
-            return null;
+            logger.error(`Failed to monitor token ${tokenAddress}: ${error.message}`);
+            throw error;
+        }
+    }
+
+    // Handle updates to token data
+    handleTokenUpdate(tokenAddress, accountInfo) {
+        try {
+            const tokenData = this.watchedTokens.get(tokenAddress);
+            if (!tokenData) return;
+
+            // Update stored data
+            tokenData.lastUpdate = Date.now();
+            
+            logger.info(`Token ${tokenAddress} updated`);
+            // Add your custom logic here for what to do when token data changes
+            
+        } catch (error) {
+            logger.error(`Error handling token update: ${error.message}`);
+        }
+    }
+
+    // Stop monitoring a token
+    stopMonitoring(tokenAddress, subscriptionId) {
+        try {
+            this.connection.removeAccountChangeListener(subscriptionId);
+            this.watchedTokens.delete(tokenAddress);
+            logger.info(`Stopped monitoring token: ${tokenAddress}`);
+        } catch (error) {
+            logger.error(`Failed to stop monitoring token: ${error.message}`);
         }
     }
 }
 
-module.exports = new TokenMonitorService();
+module.exports = new TokenMonitor();

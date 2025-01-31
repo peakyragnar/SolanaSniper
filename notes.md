@@ -129,6 +129,7 @@ Main Application (src/index.js):
     Connects to Solana devnet
     Checks wallet balance
 
+********************************************************************************
 Git branch function:
 
 # You're working on adding token monitoring
@@ -163,3 +164,55 @@ git push origin --all
 
 # Push specific branch
 git push origin feature/test
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FULL TOKEN MONITORING:
+
+Token Creation (Mint Initialization)
+    Key Feature: Detect newly created tokens (SPL tokens) via the InitializeMint instruction in the SPL Token Program.
+
+    Data to Extract:
+        [Mint Address]: Unique identifier of the token.
+        [Creator Wallet]: Address of the token's deployer.
+        [Decimals]: Token precision (e.g., 6 for USDC).
+        [Initial Supply]: Total tokens minted at creation.
+        [Freeze/Mint Authority]: Whether the creator retains control (red flag for scams).
+    
+Token Transfers & Balances
+    Key Feature: Track TransferChecked or Transfer instructions to monitor token movements.
+
+    Data to Extract:
+        [Sender/Receiver Addresses]: Identify whales or suspicious wallets.
+        [Amount Transferred]: Large transfers may signal pumps/dumps.
+        [Associated Token Accounts (ATAs)]: Track balances of specific wallets.
+        [Timestamp]: Time of activity for pattern analysis.
+
+
+ Liquidity Pool Activity
+    Key Feature: Monitor DEX interactions (e.g., Raydium, Orca, Serum) for liquidity changes.
+
+    Data to Extract:
+        [Pool Creation]: New liquidity pools (e.g., via Raydium's createPool).
+        [Add/Remove Liquidity]: Track LP token minting/burning.
+        [Swap Volume]: High volume may indicate hype or manipulation.
+        [Pool Ownership]: Check if the deployer controls the LP (rug-pull risk).
+
+Token Metadata Updates
+    Key Feature: Watch for changes to the Token Metadata Program (e.g., name, symbol, URI).    
+
+    Data to Extract:
+        [Updated Metadata URI]: Links to off-chain data (e.g., CoinGecko, website).
+        [URI]: Track metadata changes (e.g., token images, descriptions).
+        [Timestamp]: Time of changes for pattern analysis.
+        [Freeze Authority Changes]: Sudden changes may indicate malicious intent.
+
+
+DEX Listings & Market Activity
+    Key Feature: Detect new markets on DEXs (e.g., Raydium or OpenBook).
+
+    Data to Extract:
+        [Market ID]: Address of the trading pair.
+        [Base/Quote Token]: Pair being traded (e.g., SOL/newToken).
+        [Order Book Updates]: Bid/ask spreads and liquidity depth.
+
++++++++++++++++++++++++++
