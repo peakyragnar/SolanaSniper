@@ -102,9 +102,10 @@ SolanaSniper/
 Core Components:
 Network Configuration (src/config/network.js):
 
-    Manages connection to Solana's devnet
-    Provides a reusable connection function
-    Keeps network settings in one place
+    Handles blockchain connectivity - multiple networks
+    Provides two connection types: regular and pool monitor specific
+    Uses environment variables for RPC URLs
+    Implements basic logging
 
 Wallet Service (src/services/wallet.js):
 
