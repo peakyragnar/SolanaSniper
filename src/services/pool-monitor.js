@@ -77,6 +77,7 @@ class PoolMonitor {
     constructor() {
         logger.info('Initializing PoolMonitor...');
         this.connection = getPoolMonitorConnection();
+        // Raydium program ID (ensure this is correct for your target network)
         this.RAYDIUM_PROGRAM_ID = new PublicKey('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8');
         this.isMonitoring = false;
         this.subscription = null;
@@ -85,7 +86,7 @@ class PoolMonitor {
         this.TIMEOUT_MS = 15000;
     }
 
-    // Helper function to timeout promises
+    // Helper function to add a timeout to any promise
     async withTimeout(promise, timeoutMs = this.TIMEOUT_MS, errorMessage = 'Operation timed out') {
         let timeoutHandle;
         const timeoutPromise = new Promise((_, reject) => {
@@ -108,7 +109,7 @@ class PoolMonitor {
 
             const filters = [
                 {
-                    dataSize: 1440, // Raydium pool size
+                    dataSize: 1440, // Expected Raydium pool account size
                 }
             ];
 
@@ -118,7 +119,7 @@ class PoolMonitor {
                 encoding: 'base64',
             };
 
-            // First attempt with filters
+            // First attempt using filters
             try {
                 const accounts = await this.withTimeout(
                     this.connection.getProgramAccounts(this.RAYDIUM_PROGRAM_ID, config),
@@ -127,20 +128,19 @@ class PoolMonitor {
                 );
 
                 logger.info(`Found ${accounts.length} pools with filter`);
-                
                 if (accounts.length > 0) {
-                    return accounts.slice(0, limit);
+                    // Return the last "limit" accounts (assuming they are in creation order)
+                    return accounts.slice(-limit);
                 }
             } catch (error) {
                 logger.warn(`Initial pool fetch failed: ${error.message}`);
             }
 
-            // Fallback: try without filters
+            // Fallback: attempt query without filters
             logger.info('Attempting fallback query without filters...');
             const fallbackConfig = {
                 commitment: 'confirmed',
                 encoding: 'base64',
-                limits: limit
             };
 
             const fallbackAccounts = await this.withTimeout(
@@ -150,11 +150,11 @@ class PoolMonitor {
             );
 
             logger.info(`Found ${fallbackAccounts.length} accounts without filter`);
-            return fallbackAccounts.slice(0, limit);
+            return fallbackAccounts.slice(-limit);
 
         } catch (error) {
             logger.error(`Failed to fetch pools: ${error.message}`);
-            
+
             if (this.retryAttempts < this.MAX_RETRIES) {
                 this.retryAttempts++;
                 logger.info(`Retrying (${this.retryAttempts}/${this.MAX_RETRIES})...`);
@@ -174,17 +174,21 @@ class PoolMonitor {
             }
 
             logger.info('Starting real-time pool monitoring...');
-            
-            // Setup monitoring with automatic reconnection
+
+            // Set up the subscription using the proper callback parameters:
+            // The callback receives an "info" object and a "context" object.
             const setupSubscription = () => {
                 this.subscription = this.connection.onProgramAccountChange(
                     this.RAYDIUM_PROGRAM_ID,
-                    (accountInfo, context) => {
+                    (info, context) => {
                         try {
-                            const accountId = context.accountId.toString();
+                            // info contains "accountId" and "accountInfo"
+                            const accountId = info.accountId.toString();
+                            // Ensure that accountInfo.data exists before reading its length
+                            const data = info.accountInfo.data || Buffer.alloc(0);
                             logger.info('Account change detected:');
                             logger.info(`- Account: ${accountId}`);
-                            logger.info(`- Data length: ${accountInfo.data.length}`);
+                            logger.info(`- Data length: ${data.length}`);
                             logger.info(`- Slot: ${context.slot}`);
                         } catch (error) {
                             logger.error(`Error processing account change: ${error.message}`);
@@ -197,14 +201,8 @@ class PoolMonitor {
             setupSubscription();
             this.isMonitoring = true;
 
-            // Setup reconnection handler
-            this.connection.onDisconnect(() => {
-                logger.warn('WebSocket disconnected, attempting to reconnect...');
-                if (this.isMonitoring) {
-                    setupSubscription();
-                }
-            });
-
+            // Note: The onDisconnect method is not available in current web3.js.
+            // For reconnection logic, you might need to monitor errors on the underlying WebSocket.
             logger.info('Pool monitor started successfully');
             return true;
 
@@ -239,4 +237,7 @@ class PoolMonitor {
     }
 }
 
-module.exports = PoolMonitor;
+module.exports = {
+    PoolMonitor,
+    TokenMonitor
+};

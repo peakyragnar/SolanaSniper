@@ -8,7 +8,7 @@ require('dotenv').config();
 // Import required services and utilities
 const { getConnection } = require('./config/network');
 const walletService = require('./services/wallet');
-const poolMonitor = require('./services/pool-monitor');
+const { PoolMonitor } = require('./services/pool-monitor');
 const logger = require('./utils/logger');
 
 // Main initialization function
@@ -32,8 +32,11 @@ async function initialize() {
         // Start pool monitoring
         logger.info('=== Starting Pool Monitor ===');
         
-        // First get recent pools
-        await poolMonitor.getRecentPools(5);
+        // Create instance first
+        const poolMonitor = new PoolMonitor();
+
+        // Then call methods
+        const pools = await poolMonitor.getRecentPools();
         
         // Then start real-time monitoring
         await poolMonitor.startMonitoring();
