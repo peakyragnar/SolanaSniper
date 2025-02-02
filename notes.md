@@ -25,16 +25,13 @@ File Structure Decisions:
             Centralizes all configuration
             Improves maintainability
     
-    src/utils/
-        Purpose:
-           Helper functions
-           shared utilities
-           common calculations
+        Core Components:
+        Network Configuration (src/config/network.js):
 
-        why needed?
-            Prevents code duplication
-            Makes testing easier
-            Improves code organization
+            Handles blockchain connectivity - multiple networks
+            Provides two connection types: regular and pool monitor specific
+            Uses environment variables for RPC URLs
+            Implements basic logging
 
     src/services/
         Purpose:
@@ -49,6 +46,28 @@ File Structure Decisions:
             Easier to test individual components
             Supports scalability
 
+        Core Components:
+            Token Monitoring Service (src/services/pool-monitor.js):
+
+
+
+
+
+
+
+    src/utils/
+        Purpose:
+           Helper functions
+           shared utilities
+           common calculations
+
+        why needed?
+            Prevents code duplication
+            Makes testing easier
+            Improves code organization
+
+    
+
 Dependencies Chosen:
     @solana/web3.js
         Purpose:
@@ -56,7 +75,7 @@ Dependencies Chosen:
             network connection
             transaction handling
 
-        WHy necessary?
+        Why necessary?
             Official Solana SDK
             Required for any Solana interaction
 
@@ -89,6 +108,9 @@ seed phrase: side junior provide early vague plug wrestle luggage shove usual de
 check balance: solana balance HJacMpaNVd2B3vDCup9P836mMWfthgnY253f3EsFJoLZ --url devnet
 https://faucet.solana.com/
 
+
+
+
 So far: 
 Project Structure
 We've set up a structured Node.js project with distinct components:
@@ -99,13 +121,6 @@ SolanaSniper/
 │   ├── services/    (Core services)
 │   └── utils/       (Helper utilities)
 
-Core Components:
-Network Configuration (src/config/network.js):
-
-    Handles blockchain connectivity - multiple networks
-    Provides two connection types: regular and pool monitor specific
-    Uses environment variables for RPC URLs
-    Implements basic logging
 
 Wallet Service (src/services/wallet.js):
 
@@ -217,3 +232,84 @@ DEX Listings & Market Activity
         [Order Book Updates]: Bid/ask spreads and liquidity depth.
 
 +++++++++++++++++++++++++
+update tracking:
+
+# Development Phases
+
+## Phase 1: Basic Infrastructure (Current)
+- ✅ Network connections
+- ✅ Basic monitoring setup
+- ✅ Error handling
+- ✅ Logging system
+
+## Phase 2: Pool Monitoring (In Progress)
+- 🔄 Detect new pool creation
+- 🔄 Filter real pools from other account changes
+- ⬜ Analyze pool composition
+- ⬜ Track liquidity changes
+
+## Phase 3: Token Monitoring
+- ⬜ Detect new token creation
+- ⬜ Track token metadata
+- ⬜ Monitor transfers
+- ⬜ Track balances
+
+## Phase 4: Market Analysis
+- ⬜ DEX listings
+- ⬜ Price impact calculation
+- ⬜ Volume tracking
+- ⬜ Liquidity depth analysis
+
+## Phase 5: Risk Analysis
+- ⬜ Ownership analysis
+- ⬜ Liquidity locking checks
+- ⬜ Whale wallet tracking
+- ⬜ Rug-pull detection
+
+# Detailed Implementation Steps
+
+## 1. Pool Monitoring (Current Focus)
+1. Basic Pool Detection
+   - ✅ Connect to Raydium program
+   - ✅ Detect account changes
+   - 🔄 Filter for pool-sized accounts (2208 bytes)
+   - ⬜ Verify pool structure
+
+2. Pool Analysis
+   - ⬜ Decode pool data structure
+   - ⬜ Extract token pair information
+   - ⬜ Calculate initial liquidity
+   - ⬜ Track liquidity changes
+
+3. Pool Validation
+   - ⬜ Verify pool creator
+   - ⬜ Check token validity
+   - ⬜ Analyze initial liquidity distribution
+   - ⬜ Monitor LP token distribution
+
+## 2. Token Monitoring (Next Phase)
+1. Token Creation Detection
+   - ⬜ Monitor SPL Token Program
+   - ⬜ Detect InitializeMint instructions
+   - ⬜ Extract token metadata
+   - ⬜ Validate token structure
+
+2. Token Transfer Tracking
+   - ⬜ Monitor Transfer instructions
+   - ⬜ Track significant movements
+   - ⬜ Monitor whale wallets
+   - ⬜ Calculate velocity metrics
+
+## 3. Market Analysis (Future Phase)
+1. DEX Integration
+   - ⬜ Monitor market creation
+   - ⬜ Track order book changes
+   - ⬜ Calculate price impact
+   - ⬜ Monitor trading volume
+
+## 4. Risk Analysis (Final Phase)
+1. Security Checks
+   - ⬜ Analyze contract ownership
+   - ⬜ Check for known scam patterns
+   - ⬜ Monitor suspicious transactions
+   - ⬜ Track related wallets

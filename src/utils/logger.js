@@ -5,15 +5,25 @@
 // - Makes it easy to change logging behavior later
 // - Adds log levels for better debugging
 
+/**
+ * Simple logging utility with consistent formatting
+ */
 const logger = {
-    // Info level: For general operational messages
-    info: (message) => console.log(`[INFO] ${message}`),
-    
-    // Error level: For errors and exceptions
-    error: (message) => console.error(`[ERROR] ${message}`),
-    
-    // Debug level: For detailed debugging information
-    debug: (message) => console.log(`[DEBUG] ${message}`)
+    info: (message, data = '') => {
+        console.log(`[INFO] ${message}`, data || '');
+    },
+
+    error: (message, error = '') => {
+        console.error(`[ERROR] ${message}`, error || '');
+    },
+
+    warn: (message, data = '') => {
+        console.warn(`[WARN] ${message}`, data || '');
+    },
+
+    debug: (message, data = '') => {
+        console.debug(`[DEBUG] ${message}`, data || '');
+    }
 };
 
 module.exports = logger;
