@@ -54,7 +54,7 @@ class TokenMonitor {
             tokenData.lastUpdate = Date.now();
             
             logger.info(`Token ${tokenAddress} updated`);
-            // Add your custom logic here for what to do when token data changes
+            // Custom logic for token update can be added here
             
         } catch (error) {
             logger.error(`Error handling token update: ${error.message}`);
@@ -77,7 +77,7 @@ class PoolMonitor {
     constructor() {
         logger.info('Initializing PoolMonitor...');
         this.connection = getPoolMonitorConnection();
-        // Raydium program ID (ensure this is correct for your target network)
+        // Raydium program ID (ensure this matches your network)
         this.RAYDIUM_PROGRAM_ID = new PublicKey('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8');
         this.isMonitoring = false;
         this.subscription = null;
@@ -86,13 +86,12 @@ class PoolMonitor {
         this.TIMEOUT_MS = 15000;
     }
 
-    // Helper function to add a timeout to any promise
+    // Adds a timeout to any promise for robust error handling
     async withTimeout(promise, timeoutMs = this.TIMEOUT_MS, errorMessage = 'Operation timed out') {
         let timeoutHandle;
         const timeoutPromise = new Promise((_, reject) => {
             timeoutHandle = setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
         });
-
         try {
             const result = await Promise.race([promise, timeoutPromise]);
             clearTimeout(timeoutHandle);
@@ -129,7 +128,7 @@ class PoolMonitor {
 
                 logger.info(`Found ${accounts.length} pools with filter`);
                 if (accounts.length > 0) {
-                    // Return the last "limit" accounts (assuming they are in creation order)
+                    // If pools are returned, select the most recent "limit" accounts
                     return accounts.slice(-limit);
                 }
             } catch (error) {
@@ -140,7 +139,7 @@ class PoolMonitor {
             logger.info('Attempting fallback query without filters...');
             const fallbackConfig = {
                 commitment: 'confirmed',
-                encoding: 'base64',
+                encoding: 'base64'
             };
 
             const fallbackAccounts = await this.withTimeout(
@@ -151,17 +150,17 @@ class PoolMonitor {
 
             logger.info(`Found ${fallbackAccounts.length} accounts without filter`);
             return fallbackAccounts.slice(-limit);
-
         } catch (error) {
             logger.error(`Failed to fetch pools: ${error.message}`);
 
+            // Increase delay if the error status indicates rate limiting
+            const delay = error.status === 429 ? 2000 * (this.retryAttempts + 1) : 1000 * (this.retryAttempts + 1);
             if (this.retryAttempts < this.MAX_RETRIES) {
                 this.retryAttempts++;
-                logger.info(`Retrying (${this.retryAttempts}/${this.MAX_RETRIES})...`);
-                await new Promise(resolve => setTimeout(resolve, 1000 * this.retryAttempts));
+                logger.info(`Retrying (${this.retryAttempts}/${this.MAX_RETRIES}) after delay of ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
                 return this.getRecentPools(limit);
             }
-            
             return [];
         }
     }
@@ -175,16 +174,14 @@ class PoolMonitor {
 
             logger.info('Starting real-time pool monitoring...');
 
-            // Set up the subscription using the proper callback parameters:
-            // The callback receives an "info" object and a "context" object.
+            // Set up the subscription using the callback that receives info and context
             const setupSubscription = () => {
                 this.subscription = this.connection.onProgramAccountChange(
                     this.RAYDIUM_PROGRAM_ID,
                     (info, context) => {
                         try {
-                            // info contains "accountId" and "accountInfo"
+                            // 'info' contains accountId and accountInfo
                             const accountId = info.accountId.toString();
-                            // Ensure that accountInfo.data exists before reading its length
                             const data = info.accountInfo.data || Buffer.alloc(0);
                             logger.info('Account change detected:');
                             logger.info(`- Account: ${accountId}`);
@@ -201,11 +198,10 @@ class PoolMonitor {
             setupSubscription();
             this.isMonitoring = true;
 
-            // Note: The onDisconnect method is not available in current web3.js.
-            // For reconnection logic, you might need to monitor errors on the underlying WebSocket.
+            // Note: onDisconnect is not provided by current web3.js. For reconnection logic,
+            // monitor errors on the underlying WebSocket.
             logger.info('Pool monitor started successfully');
             return true;
-
         } catch (error) {
             this.isMonitoring = false;
             logger.error(`Failed to start monitoring: ${error.message}`);
